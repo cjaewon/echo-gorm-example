@@ -2,9 +2,60 @@ package auth
 
 import (
 	"net/http"
+	"time"
 
+	"github.com/cjaewon/echo-gorm-example/database/models"
+	"golang.org/x/crypto/bcrypt"
+
+	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo/v4"
 )
+
+// Register : Register User
+func (AuthRouter) Register(c echo.Context) error {
+	type RequestBody struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+
+		DisplayName string `json:"display_name"`
+	}
+
+	var body RequestBody
+	if err := c.Bind(&body); err != nil {
+		return err
+	}
+
+	db, _ := c.Get("db").(*gorm.DB)
+
+	if err := db.Where("username = ?", body.Username).First(&models.User{}).Error; err == nil {
+		return c.NoContent(http.StatusConflict)
+	}
+
+	user := models.User{
+		Username:     body.Username,
+		PasswordHash: body.Password,
+
+		DisplayName: body.DisplayName,
+	}
+
+	user.HashPassword()
+	db.Create(user)
+
+	token, _ := user.GenerateToken()
+
+	var cookie http.Cookie
+
+	cookie.Name = "token"
+	cookie.Value = token
+	cookie.Expires = time.Now().Add(7 * 24 * time.Hour)
+
+	c.SetCookie(&cookie)
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"token": token,
+		"user":  user,
+	})
+}
 
 //Login : Login Router
 func (AuthRouter) Login(c echo.Context) error {
@@ -15,12 +66,33 @@ func (AuthRouter) Login(c echo.Context) error {
 
 	var body RequestBody
 	if err := c.Bind(&body); err != nil {
-		return err
+		return c.NoContent(http.StatusNotFound)
 	}
 
-	if body.Username == "user" && body.Password == "1234" {
-		return c.HTML(http.StatusOK, "<h1>Hello user!</h1>")
+	db, _ := c.Get("db").(*gorm.DB)
+
+	var user models.User
+
+	if err := db.Where("username = ?", body.Username).First(&user).Error; err != nil {
+		return c.NoContent(http.StatusConflict)
 	}
 
-	return c.HTML(http.StatusBadRequest, "<h1>ERROR</h1>")
+	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(body.Password)) != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	token, _ := user.GenerateToken()
+
+	var cookie http.Cookie
+
+	cookie.Name = "token"
+	cookie.Value = token
+	cookie.Expires = time.Now().Add(7 * 24 * time.Hour)
+
+	c.SetCookie(&cookie)
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"token": token,
+		"user":  user,
+	})
 }

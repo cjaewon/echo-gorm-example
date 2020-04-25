@@ -7,5 +7,6 @@ type AuthRouter struct{}
 
 // Init : Init Group
 func (ctrl AuthRouter) Init(g *echo.Group) {
+	g.POST("/register", ctrl.Register)
 	g.POST("/login", ctrl.Login)
 }
