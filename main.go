@@ -9,9 +9,11 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func main() {
+func init() {
 	godotenv.Load(".env.development")
+}
 
+func main() {
 	db := database.Connect()
 	defer db.Close()
 
