@@ -1,8 +1,8 @@
-package middleware
+package middlewares
 
 import (
-	"github.com/labstack/echo/v4"
 	"github.com/jinzhu/gorm"
+	"github.com/labstack/echo/v4"
 )
 
 // ContextDB : pass db

@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/cjaewon/echo-gorm-example/database"
-	"github.com/cjaewon/echo-gorm-example/lib/middleware"
+	"github.com/cjaewon/echo-gorm-example/lib/middlewares"
 	"github.com/cjaewon/echo-gorm-example/routes"
 
 	"github.com/joho/godotenv"
@@ -19,7 +19,7 @@ func main() {
 
 	e := echo.New()
 
-	e.Use(middleware.ContextDB(db))
+	e.Use(middlewares.ContextDB(db))
 
 	routes.Routes(e.Group(""))
 

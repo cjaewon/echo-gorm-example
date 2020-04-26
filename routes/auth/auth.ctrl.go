@@ -11,7 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// Register : Register User
+// Register : Register Router
 func (AuthRouter) Register(c echo.Context) error {
 	type RequestBody struct {
 		Username string `json:"username"`
@@ -57,7 +57,7 @@ func (AuthRouter) Register(c echo.Context) error {
 	})
 }
 
-//Login : Login Router
+// Login : Login Router
 func (AuthRouter) Login(c echo.Context) error {
 	type RequestBody struct {
 		Username string `json:"username"`
@@ -95,4 +95,16 @@ func (AuthRouter) Login(c echo.Context) error {
 		"token": token,
 		"user":  user,
 	})
+}
+
+// Logout : Logout Router
+func (AuthRouter) Logout(c echo.Context) error {
+	tokenCookie, _ := c.Get("tokenCookie").(*http.Cookie)
+
+	tokenCookie.Value = ""
+	tokenCookie.Expires = time.Unix(0, 0)
+
+	c.SetCookie(tokenCookie)
+
+	return c.NoContent(200)
 }

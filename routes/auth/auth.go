@@ -1,12 +1,16 @@
 package auth
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/cjaewon/echo-gorm-example/lib/middlewares"
+	"github.com/labstack/echo/v4"
+)
 
-// AuthRouter :
+// AuthRouter : AuthRouter struct
 type AuthRouter struct{}
 
 // Init : Init Group
 func (ctrl AuthRouter) Init(g *echo.Group) {
 	g.POST("/register", ctrl.Register)
 	g.POST("/login", ctrl.Login)
+	g.POST("/logout", ctrl.Logout, middlewares.Authoriszed)
 }
