@@ -8,7 +8,7 @@ import (
 // AuthRouter : AuthRouter struct
 type AuthRouter struct{}
 
-// Init : Init Group
+// Init : Init Router
 func (ctrl AuthRouter) Init(g *echo.Group) {
 	g.POST("/register", ctrl.Register)
 	g.POST("/login", ctrl.Login)
