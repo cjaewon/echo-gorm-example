@@ -21,7 +21,11 @@ func (AuthRouter) Register(c echo.Context) error {
 	}
 
 	var body RequestBody
+
 	if err := c.Bind(&body); err != nil {
+		return err
+	}
+	if err := c.Validate(&body); err != nil {
 		return err
 	}
 
@@ -65,8 +69,12 @@ func (AuthRouter) Login(c echo.Context) error {
 	}
 
 	var body RequestBody
+
 	if err := c.Bind(&body); err != nil {
 		return c.NoContent(http.StatusNotFound)
+	}
+	if err := c.Validate(&body); err != nil {
+		return err
 	}
 
 	db, _ := c.Get("db").(*gorm.DB)

@@ -10,33 +10,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// Create : Create Router
-func (PostsRouter) Create(c echo.Context) error {
-	type RequestBody struct {
-		Title   string `json:"title" validate:"required"`
-		Content string `json:"content" validate:"required"`
-	}
-
-	var body RequestBody
-	if err := c.Bind(&body); err != nil {
-		return c.NoContent(http.StatusNotFound)
-	}
-
-	db, _ := c.Get("db").(*gorm.DB)
-	username, _ := c.Get("username").(string)
-
-	post := models.Post{
-		Title:    body.Title,
-		Content:  body.Content,
-		Date:     time.Now(),
-		Username: username,
-	}
-
-	db.Create(post)
-
-	return c.JSON(http.StatusOK, post)
-}
-
 // Read : Read Router
 func (PostsRouter) Read(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
@@ -50,6 +23,37 @@ func (PostsRouter) Read(c echo.Context) error {
 	if err := db.Where("id = ?", id).First(&post).Error; err == nil {
 		return c.NoContent(http.StatusNotFound)
 	}
+
+	return c.JSON(http.StatusOK, post)
+}
+
+// Create : Create Router
+func (PostsRouter) Create(c echo.Context) error {
+	type RequestBody struct {
+		Title   string `json:"title" validate:"required"`
+		Content string `json:"content" validate:"required"`
+	}
+
+	var body RequestBody
+
+	if err := c.Bind(&body); err != nil {
+		return c.NoContent(http.StatusNotFound)
+	}
+	if err := c.Validate(&body); err != nil {
+		return err
+	}
+
+	db, _ := c.Get("db").(*gorm.DB)
+	username, _ := c.Get("username").(string)
+
+	post := models.Post{
+		Title:    body.Title,
+		Content:  body.Content,
+		Date:     time.Now(),
+		Username: username,
+	}
+
+	db.Create(post)
 
 	return c.JSON(http.StatusOK, post)
 }
