@@ -43,7 +43,7 @@ func (AuthRouter) Register(c echo.Context) error {
 	}
 
 	user.HashPassword()
-	db.Create(user)
+	db.Create(&user)
 
 	token, _ := user.GenerateToken()
 
